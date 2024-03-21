@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Tatar_checkers</string>
+    <string name="offline_game">Offline Game</string>
+    <string name="online_game">Online Game</string>
+    <string name="create_game">Create Game</string>
+    <string name="join_game">Join Game</string>
+</resources>

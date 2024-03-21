@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "762677409274",
+    "project_id": "russian-checkers",
+    "storage_bucket": "russian-checkers.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762677409274:android:64b36ded9ec0daf653a043",
+        "android_client_info": {
+          "package_name": "com.shamanshs.russian_checkers"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMJ0jn0GFnqEB8M_buQlKvRIBA0q2Y66Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762677409274:android:b8fc8ae88bb2ed3b53a043",
+        "android_client_info": {
+          "package_name": "com.shamanshs.tatar_checkers"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMJ0jn0GFnqEB8M_buQlKvRIBA0q2Y66Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
