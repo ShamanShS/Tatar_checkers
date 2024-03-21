@@ -93,8 +93,6 @@ class FieldView(context: Context, attrs: AttributeSet) : View(context, attrs) {
              vec[0] = if (moveChecker[2] < moveChecker[0]) 1 else -1
             vec[1] = if (moveChecker[3] < moveChecker[1]) 1 else -1
 
-            canvas.drawPath(ptCurve, clueKillPaint)
-
             val cx1 = (moveChecker[0] * cellSide) + cellSide / 2
             val cy1 = (moveChecker[1] * cellSide) + cellSide / 2
             val cx2 = (moveChecker[2] * cellSide) + cellSide / 2

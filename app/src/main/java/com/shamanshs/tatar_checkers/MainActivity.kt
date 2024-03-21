@@ -37,6 +37,12 @@ class MainActivity : AppCompatActivity() {
         binding.buttonOnlineGame.setOnClickListener { onlineGame() }
         binding.buttonCreateGame.setOnClickListener { createGame() }
         binding.buttonJoinGame.setOnClickListener { joinGame() }
+        Thread{
+            while (true) {
+                Thread.sleep(100)
+                binding.gameField.invalidate()
+            }
+        }.start()
     }
 
     private fun startGame() {
