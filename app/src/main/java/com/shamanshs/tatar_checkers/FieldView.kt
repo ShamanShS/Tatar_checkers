@@ -187,7 +187,7 @@ class FieldView(context: Context, attrs: AttributeSet) : View(context, attrs) {
             heightSize / 8f
         }
         clueCircle = cellSide / 4
-        setMeasuredDimension(widthSize, heightSize)
+        setMeasuredDimension((cellSide * 8).toInt(), (cellSide * 8).toInt())
     }
 
     private fun TouchCell(x: Float, y:Float) {

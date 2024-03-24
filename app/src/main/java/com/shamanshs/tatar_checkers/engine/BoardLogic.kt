@@ -5,6 +5,7 @@ import com.google.firebase.ktx.Firebase
 import com.shamanshs.tatar_checkers.engine.Board.blackCount
 import com.shamanshs.tatar_checkers.engine.Board.chooseFigure
 import com.shamanshs.tatar_checkers.engine.Board.choosingFigure
+import com.shamanshs.tatar_checkers.engine.Board.id
 import com.shamanshs.tatar_checkers.engine.Board.kill
 import com.shamanshs.tatar_checkers.engine.Board.mapABoard
 import com.shamanshs.tatar_checkers.engine.Board.mapMove
@@ -15,23 +16,14 @@ import com.shamanshs.tatar_checkers.engine.Board.turn
 import com.shamanshs.tatar_checkers.engine.Board.typeGame
 import com.shamanshs.tatar_checkers.engine.Board.whiteCount
 import com.shamanshs.tatar_checkers.engine.Board.win
+import com.shamanshs.tatar_checkers.engine.Board.youColor
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.random.Random
 import kotlin.random.nextInt
 
 class BoardLogic() {
-    val youColor = when(typeGame) {
-        "P2P" -> 0
-        "HostGame" -> 1
-        "GameStart" -> -1
-        else -> null
-    }
-    var id = -1
-    init{
-        if (typeGame == "HostGame")
-            id = Random.nextInt(1000..9999)
-    }
+
 
 
 

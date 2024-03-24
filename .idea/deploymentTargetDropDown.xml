@@ -10,19 +10,19 @@
               <deviceKey>
                 <Key>
                   <type value="SERIAL_NUMBER" />
-                  <value value="22241FDEE0002C" />
+                  <value value="adb-22241FDEE0002C-BNxxNb._adb-tls-connect._tcp" />
                 </Key>
               </deviceKey>
             </Target>
           </runningDeviceTargetSelectedWithDropDown>
-          <timeTargetWasSelectedWithDropDown value="2024-03-21T20:33:29.834050500Z" />
+          <timeTargetWasSelectedWithDropDown value="2024-03-24T15:49:19.471938700Z" />
           <runningDeviceTargetsSelectedWithDialog>
             <Target>
               <type value="RUNNING_DEVICE_TARGET" />
               <deviceKey>
                 <Key>
-                  <type value="VIRTUAL_DEVICE_PATH" />
-                  <value value="C:\Users\Shama\.android\avd\Pixel_6_API_34.avd" />
+                  <type value="SERIAL_NUMBER" />
+                  <value value="adb-22241FDEE0002C-BNxxNb._adb-tls-connect._tcp" />
                 </Key>
               </deviceKey>
             </Target>

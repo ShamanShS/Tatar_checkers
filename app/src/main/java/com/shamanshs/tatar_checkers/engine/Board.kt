@@ -16,6 +16,9 @@ object Board {
     var turn = 1
     var id = -1
     var move = false
+    var new = true
+    var rotateIs = true
+    var youColor = 0
 
     fun fillMapABoard() {
         for (i in 0..7){
@@ -46,6 +49,21 @@ object Board {
         mapABoardReset()
         mapMoveReset(0)
         moveChecker = MutableList(5, {0})
+        destroyGame()
+    }
+
+    fun destroyGame(){
+        win = 0
+        typeGame = ""
+        turn = 1
+        id = -1
+        move = false
+        new = true
+        rotateIs = true
+        youColor = 0
+        choosingFigure = false
+        massacre = false
+        kill = false
     }
 
 

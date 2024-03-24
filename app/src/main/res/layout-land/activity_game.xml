@@ -9,15 +9,12 @@
 
     <com.shamanshs.tatar_checkers.FieldView
         android:id="@+id/gameField"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginStart="20dp"
-        android:layout_marginTop="0dp"
-        android:layout_marginBottom="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"></com.shamanshs.tatar_checkers.FieldView>
 
 
-    </com.shamanshs.tatar_checkers.FieldView>
 </androidx.constraintlayout.widget.ConstraintLayout>

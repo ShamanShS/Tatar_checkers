@@ -11,9 +11,12 @@ import androidx.fragment.app.FragmentTransaction
 import com.shamanshs.tatar_checkers.databinding.ActivityMainBinding
 import com.shamanshs.tatar_checkers.engine.Board
 import android.animation.ObjectAnimator
+import android.content.pm.ActivityInfo
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.shamanshs.tatar_checkers.engine.Board.finishGame
 import com.shamanshs.tatar_checkers.engine.Board.id
+import com.shamanshs.tatar_checkers.engine.Board.new
 import com.shamanshs.tatar_checkers.engine.Board.typeGame
 import com.shamanshs.tatar_checkers.engine.GameInfo
 import kotlin.random.Random
@@ -25,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -39,14 +43,15 @@ class MainActivity : AppCompatActivity() {
         binding.buttonJoinGame.setOnClickListener { joinGame() }
         Thread{
             while (true) {
-                Thread.sleep(100)
+                Thread.sleep(300)
                 binding.gameField.invalidate()
             }
         }.start()
     }
 
     private fun startGame() {
-        Board.fillMapABoard()
+        new = true
+        finishGame()
         typeGame = "P2P"
         startActivity(Intent(this, GameActivity::class.java))
     }
@@ -66,8 +71,11 @@ class MainActivity : AppCompatActivity() {
 
 
     fun createGame() {
-        Board.fillMapABoard()
+        new = true
+        finishGame()
+        Board.youColor = 1
         typeGame = "HostGame"
+        id = Random.nextInt(1000..9999)
         startActivity(Intent(this, GameActivity::class.java))
     }
 
@@ -86,7 +94,9 @@ class MainActivity : AppCompatActivity() {
                     binding.idText.error = "Нужен верный id"
                 }
                 else{
-                    Board.fillMapABoard()
+                    finishGame()
+                    Board.youColor = -1
+                    new = true
                     typeGame = "GameStart"
                     id = gameId.toInt()
                     startActivity(Intent(this, GameActivity::class.java))
