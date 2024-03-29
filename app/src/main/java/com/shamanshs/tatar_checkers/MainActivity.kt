@@ -12,6 +12,20 @@ import com.shamanshs.tatar_checkers.databinding.ActivityMainBinding
 import com.shamanshs.tatar_checkers.engine.Board
 import android.animation.ObjectAnimator
 import android.content.pm.ActivityInfo
+import android.content.res.Resources.Theme
+import android.util.Log
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContract
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.internal.ApiExceptionUtil
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.shamanshs.tatar_checkers.engine.Board.finishGame
@@ -25,22 +39,38 @@ import kotlin.random.nextInt
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
+    lateinit var launcher: ActivityResultLauncher<Intent>
+    lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        supportActionBar?.show()
+        auth = Firebase.auth
+        test()
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
+            val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
+            try {
+                val acc = task.getResult(ApiException::class.java)
+                if (acc != null){
+                    firebaseAuthithGoogle(acc.idToken!!)
+                }
+            } catch (e: ApiException) {
+                Log.d("auth", "auth error 1")
+            }
+        }
         binding.buttonSoloGame.setOnClickListener { startGame() }
         binding.buttonOnlineGame.setOnClickListener { onlineGame() }
         binding.buttonCreateGame.setOnClickListener { createGame() }
         binding.buttonJoinGame.setOnClickListener { joinGame() }
+        binding.singInButtom?.setOnClickListener { singInWithGoogle() }
         Thread{
             while (true) {
                 Thread.sleep(300)
@@ -104,7 +134,33 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
+    private fun getClient():GoogleSignInClient {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+        return GoogleSignIn.getClient(this, gso)
+    }
 
+    private fun singInWithGoogle() {
+        val singInClient = getClient()
+        launcher.launch(singInClient.signInIntent)
+    }
 
+    private fun firebaseAuthithGoogle(idToken: String){
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential).addOnCompleteListener {
+            if(it.isSuccessful){
+                Log.d("auth", "auth good")
+            }
+            else
+                Log.d("auth", "auth error")
+        }
+    }
+
+    private fun test() {
+        val ab = supportActionBar
+        ab?.title = "hi"
+    }
 
 }

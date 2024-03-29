@@ -8,4 +8,5 @@ class GameInfo {
     var field: MutableList<Int> = MutableList(64) { 0}
     var blackCount: Int = 0
     var whiteCount: Int = 0
+    var win = 0
 }

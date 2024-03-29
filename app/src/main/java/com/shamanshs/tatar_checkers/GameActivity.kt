@@ -35,10 +35,8 @@ import com.shamanshs.tatar_checkers.engine.BoardLogic
 import com.shamanshs.tatar_checkers.engine.GameInfo
 
 class GameActivity : AppCompatActivity(), FieldView.Listener  {
-    lateinit var binding : ActivityGameBinding
-    val game = BoardLogic()
-    var lastTurn = 1
-
+    private lateinit var binding : ActivityGameBinding
+    private val game = BoardLogic()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -54,7 +52,7 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
         binding.statusTurnText?.text = str
         binding.gameField.listener = this
         if (new) {
-            Board.fillMapABoard()
+            Board.test()
             turn = 1
             win = 0
             new = false
@@ -74,24 +72,18 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
             if (youColor == -1) {
                 binding.gameField.rotation = 180f
             }
-            game.sendToDataBase()
+            sendToDataBase()
         }
     }
 
 
 
     override fun onCLick(i: Int, j: Int) {
+        isOver(turn)
         if (win == 0)
             game.action(i, j)
-        game.isOver()
-
-        if (win != 0) {
-            val myDialogFragment = WinDialog()
-            val manager = supportFragmentManager
-            val transaction: FragmentTransaction = manager.beginTransaction()
-            myDialogFragment.show(transaction, "dialog")
-        }
         binding.gameField.update()
+        sendToDataBase()
     }
 
     override fun onDestroy() {
@@ -101,13 +93,86 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
         Log.d("MyLog", "Destroy")
     }
 
+    private fun isOver(turnCheck: Int) {
+        if (kill || choosingFigure) {
+            Log.d("0", "$win  ${Board.whiteCount}")
+            return
+        }
+        if (blackCount <= 0) {
+            win = 1
+            Log.d("1", "$win  ${Board.whiteCount}")
+            val myDialogFragment = WinDialog()
+            val manager = supportFragmentManager
+            val transaction: FragmentTransaction = manager.beginTransaction()
+            myDialogFragment.show(transaction, "dialog")
+            return
+        }
+        else if(whiteCount <= 0) {
+            win = -1
+            Log.d("2", "$win  ${Board.whiteCount}")
+            val myDialogFragment = WinDialog()
+            val manager = supportFragmentManager
+            val transaction: FragmentTransaction = manager.beginTransaction()
+            myDialogFragment.show(transaction, "dialog")
+            return
+        }
+        Log.d("3", "$win  ${Board.whiteCount}")
+        var temp = true
+        for (i in 0..7){
+            for(j in 0..7){
+                if (mapABoard[i][j] == turnCheck){
+                    if (game.checkCommonMove(i, j, mapABoard[i][j]))
+                        temp = false
+                    else if (game.checkKillMove(i, j, mapABoard[i][j], true))
+                        temp = false
+                }
+                else if (mapABoard[i][j] == turnCheck * 2) {
+                    if (game.checkCommonKingMove(i, j, true))
+                        temp = false
+                    else if (game.checkKillKingMove(i, j, mapABoard[i][j], true))
+                        temp = false
+                }
+            }
+        }
+        if (temp) {
+            win = -turnCheck
+            val myDialogFragment = WinDialog()
+            val manager = supportFragmentManager
+            val transaction: FragmentTransaction = manager.beginTransaction()
+            myDialogFragment.show(transaction, "dialog")
+        }
+        Board.mapMoveReset(0)
+    }
+    private fun sendToDataBase(){
+        val dataGame = GameInfo()
+        convertToDataModel(dataGame)
+        Firebase.firestore.collection("Games")
+            .document(id.toString())
+            .set(dataGame)
+    }
 
+    private fun convertToDataModel(dataGame: GameInfo) {
+        dataGame.id = id.toString()
+        dataGame.turn = turn
+        dataGame.win = win
+        dataGame.blackCount = blackCount
+        dataGame.whiteCount = whiteCount
+        dataGame.typeGame = typeGame
+        for (i in 0..4){
+            dataGame.moveChecker[i] = moveChecker[i]
+        }
+        for (x in 0..7){
+            for (y in 0..7){
+                dataGame.field[(y * 8) + x] = mapABoard[x][y]
+            }
+        }
+    }
 
-    fun onChangeListener(){
+    private fun onChangeListener(){
         if (id != -1){
             Firebase.firestore.collection("Games")
                 .document(id.toString())
-                .addSnapshotListener { value, error ->
+                .addSnapshotListener { value, _ ->
                     if (value != null){
                         val dataGame = value.toObject(GameInfo::class.java)
                         if (dataGame != null){
@@ -118,6 +183,7 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
                                 convertToGameModel(dataGame)
                             }
                             binding.gameField.update()
+                            isOver(turn)
                         }
                     }
                 }
@@ -138,6 +204,7 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
         blackCount = dataGame.blackCount
         whiteCount = dataGame.whiteCount
         typeGame = dataGame.typeGame
+        win = dataGame.win
         for (i in 0..4){
             moveChecker[i] = dataGame.moveChecker[i]
         }

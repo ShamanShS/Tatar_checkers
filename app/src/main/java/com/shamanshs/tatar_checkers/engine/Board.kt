@@ -4,7 +4,7 @@ package com.shamanshs.tatar_checkers.engine
 object Board {
     var mapABoard: Array<Array<Int>> = Array(8) { Array(8) { 0 } }
     var mapMove: Array<Array<Int>> = Array(8) { Array(8) { 0 } }
-    var moveChecker = MutableList(5, {0})
+    var moveChecker = MutableList(5) { 0 }
     var blackCount = 0
     var whiteCount = 0
     var massacre = false
@@ -33,6 +33,13 @@ object Board {
                 }
             }
         }
+    }
+
+    fun test() {
+        mapABoard[2][1] = -1
+        mapABoard[0][3] = 1
+        whiteCount++
+        blackCount++
     }
 
     fun mapABoardReset() {

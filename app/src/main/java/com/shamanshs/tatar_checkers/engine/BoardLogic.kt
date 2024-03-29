@@ -1,5 +1,6 @@
 package com.shamanshs.tatar_checkers.engine
 
+import android.util.Log
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.shamanshs.tatar_checkers.engine.Board.blackCount
@@ -30,7 +31,6 @@ class BoardLogic() {
     fun action(i: Int, j: Int) {
         if (id != -1 && (youColor != turn || typeGame == "HostGame")) return
         kill = canKill(turn)
-        isOver()
         if (mapMove[i][j] == 0 && mapABoard[i][j] == 0 && !massacre) {
             Board.mapMoveReset(0)
             choosingFigure = false
@@ -40,34 +40,30 @@ class BoardLogic() {
         }
         else if (choosingFigure && mapMove[i][j] == 3){ //Шашка рубит шашку
             killCommonTurn(i, j)
-            Board.mapMoveReset(0)
+            mapMoveReset(0)
             isKing(i, j)
             if (abs(mapABoard[i][j]) == 1) {
                 if (!checkKillMove(i, j, mapABoard[i][j], false)) {
                     turn *= -1
-                    Board.mapMoveReset(2)
+                    mapMoveReset(2)
                     choosingFigure = false
                     massacre = false
-                    isOver()
-                    sendToDataBase()
+                    kill = false
                 } else {
                     choosingChecker(i, j)
-                    sendToDataBase()
                     massacre = true
+
                 }
             }
             else{
                 if (!checkKillKingMove(i, j, mapABoard[i][j] / 2, false)) {
                     turn *= -1
-                    Board.mapMoveReset(2)
+                    mapMoveReset(2)
                     choosingFigure = false
                     massacre = false
-                    isOver()
-                    sendToDataBase()
-
+                    kill = false
                 } else {
                     choosingChecker(i, j)
-                    sendToDataBase()
                     massacre = true
                 }
             }
@@ -76,11 +72,10 @@ class BoardLogic() {
         else if (choosingFigure && mapMove[i][j] == 2) { //Ход обычной фигуры
             commonTurn(i, j)
             turn *= -1
-            Board.mapMoveReset(0)
+            mapMoveReset(0)
             choosingFigure = false
             isKing(i, j)
-            isOver()
-            sendToDataBase()
+            
         }
 
     }
@@ -92,38 +87,7 @@ class BoardLogic() {
         return flag
     }
 
-    fun isOver() {
-        if (kill || choosingFigure)
-            return
-        if (blackCount <= 0) {
-            win = 1
-            return
-        }
-        else if(whiteCount <= 0) {
-            win = -1
-            return
-        }
-        var temp = true
-        for (i in 0..7){
-            for(j in 0..7){
-                if (mapABoard[i][j] == turn){
-                    if (checkCommonMove(i, j, mapABoard[i][j]))
-                        temp = false
-                    else if (checkKillMove(i, j, mapABoard[i][j], true))
-                        temp = false
-                }
-                else if (mapABoard[i][j] == turn * 2) {
-                    if (checkCommonKingMove(i, j, true))
-                        temp = false
-                    else if (checkKillKingMove(i, j, mapABoard[i][j], true))
-                        temp = false
-                }
-            }
-        }
-        if (temp)
-            win = -turn
-        mapMoveReset(0)
-    }
+
 
     fun isKing(i: Int, j: Int): Boolean{
         var flag = false
@@ -177,7 +141,7 @@ class BoardLogic() {
         return flag
     }
 
-    private fun checkCommonMove(i: Int, j: Int, color: Int): Boolean {
+    fun checkCommonMove(i: Int, j: Int, color: Int): Boolean {
         var flag = false
         if (i < 7 && (j - color) < 8 && (j - color) > -1)
             if (mapABoard[i + 1][j - color] == 0) {
@@ -192,7 +156,7 @@ class BoardLogic() {
         return flag
     }
 
-    private fun checkKillMove(i: Int, j: Int, color: Int, type: Boolean): Boolean {
+    fun checkKillMove(i: Int, j: Int, color: Int, type: Boolean): Boolean {
         val vector = Array(2) { 1 }
         var flag = false
         for (x in 0..3){
@@ -211,7 +175,7 @@ class BoardLogic() {
         return flag
     }
 
-    private fun checkCommonKingMove(i: Int, j: Int, type: Boolean): Boolean {
+    fun checkCommonKingMove(i: Int, j: Int, type: Boolean): Boolean {
         val vector = Array(2) { 1 }
         var flag = false
         for (x in 0..3){
@@ -237,7 +201,7 @@ class BoardLogic() {
         return flag
     }
 
-    private fun checkKillKingMove (i: Int, j: Int, color: Int, type: Boolean):Boolean {
+    fun checkKillKingMove (i: Int, j: Int, color: Int, type: Boolean):Boolean {
         val vector = Array(2) { 1 }
         var flag = false
         for (x in 0..3) {
@@ -335,28 +299,11 @@ class BoardLogic() {
         return false
     }
 
-    fun sendToDataBase(){
-        val dataGame = GameInfo()
-        convertToDataModel(dataGame)
-        Firebase.firestore.collection("Games")
-            .document(id.toString())
-            .set(dataGame)
-    }
 
-    fun convertToDataModel(dataGame: GameInfo) {
-        dataGame.id = id.toString()
-        dataGame.turn = turn
-        dataGame.blackCount = blackCount
-        dataGame.whiteCount = whiteCount
-        dataGame.typeGame = typeGame
-        for (i in 0..4){
-            dataGame.moveChecker[i] = moveChecker[i]
-        }
-        for (x in 0..7){
-            for (y in 0..7){
-                dataGame.field[(y * 8) + x] = mapABoard[x][y]
-            }
-        }
+    companion object {
+        val WIN_BLACK = -1
+        val WIN_WHITE = 1
+        val WIN_NO_INFO = 0
     }
 
 
