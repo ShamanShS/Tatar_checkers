@@ -11,13 +11,20 @@ import androidx.fragment.app.FragmentTransaction
 import com.shamanshs.tatar_checkers.databinding.ActivityMainBinding
 import com.shamanshs.tatar_checkers.engine.Board
 import android.animation.ObjectAnimator
+import android.content.IntentSender
 import android.content.pm.ActivityInfo
 import android.content.res.Resources.Theme
+import android.graphics.drawable.BitmapDrawable
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.ActionBar
+import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -28,42 +35,59 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.shamanshs.tatar_checkers.GoogleAuth.GoogleAuthUiClient
+import com.shamanshs.tatar_checkers.GoogleAuth.UserData
 import com.shamanshs.tatar_checkers.engine.Board.finishGame
 import com.shamanshs.tatar_checkers.engine.Board.id
 import com.shamanshs.tatar_checkers.engine.Board.new
 import com.shamanshs.tatar_checkers.engine.Board.typeGame
 import com.shamanshs.tatar_checkers.engine.GameInfo
+import com.squareup.picasso.Picasso
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 import kotlin.random.nextInt
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding : ActivityMainBinding
-    lateinit var launcher: ActivityResultLauncher<Intent>
-    lateinit var auth: FirebaseAuth
+    private lateinit var launcher: ActivityResultLauncher<IntentSenderRequest>
+    private lateinit var auth: FirebaseAuth
+    private var sI = false
+
+    private val googleAuthUiClient by lazy {
+        GoogleAuthUiClient(
+            context = applicationContext,
+            oneTapClient = Identity.getSignInClient(applicationContext)
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        supportActionBar?.show()
+
         auth = Firebase.auth
-        test()
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()){
-            val task = GoogleSignIn.getSignedInAccountFromIntent(it.data)
-            try {
-                val acc = task.getResult(ApiException::class.java)
-                if (acc != null){
-                    firebaseAuthithGoogle(acc.idToken!!)
+        if (googleAuthUiClient.getSignedInUser() != null){
+            test(googleAuthUiClient.getSignedInUser()!!)
+        }
+        else{
+            singOutProfile()
+        }
+        launcher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+            if (it.resultCode == RESULT_OK) {
+                lifecycleScope.launch {
+                    val signInResult = googleAuthUiClient.signInWithIntent(
+                        intent = it.data ?: return@launch
+                    )
+                    test(signInResult.data!!)
+                    Log.d("b", "${signInResult.data?.username}")
                 }
-            } catch (e: ApiException) {
-                Log.d("auth", "auth error 1")
             }
         }
         binding.buttonSoloGame.setOnClickListener { startGame() }
@@ -87,15 +111,19 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onlineGame(){
-        if (binding.buttonCreateGame.visibility == View.INVISIBLE) {
-            binding.buttonCreateGame.visibility = View.VISIBLE
-            binding.buttonJoinGame.visibility = View.VISIBLE
-            binding.idText.visibility = View.VISIBLE
+        if (sI) {
+            if (binding.buttonCreateGame.visibility == View.INVISIBLE) {
+                binding.buttonCreateGame.visibility = View.VISIBLE
+                binding.buttonJoinGame.visibility = View.VISIBLE
+                binding.idText.visibility = View.VISIBLE
+            } else {
+                binding.buttonCreateGame.visibility = View.INVISIBLE
+                binding.buttonJoinGame.visibility = View.INVISIBLE
+                binding.idText.visibility = View.INVISIBLE
+            }
         }
         else{
-            binding.buttonCreateGame.visibility = View.INVISIBLE
-            binding.buttonJoinGame.visibility = View.INVISIBLE
-            binding.idText.visibility = View.INVISIBLE
+            Toast.makeText(applicationContext, "Анонимусы не играют по сети, зайдите в аккаунт", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -134,33 +162,46 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    private fun getClient():GoogleSignInClient {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-        return GoogleSignIn.getClient(this, gso)
-    }
 
     private fun singInWithGoogle() {
-        val singInClient = getClient()
-        launcher.launch(singInClient.signInIntent)
-    }
-
-    private fun firebaseAuthithGoogle(idToken: String){
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential).addOnCompleteListener {
-            if(it.isSuccessful){
-                Log.d("auth", "auth good")
+        lifecycleScope.launch {
+            if (googleAuthUiClient.getSignedInUser() != null) {
+                googleAuthUiClient.signOut()
+                singOutProfile()
+            } else {
+                val singIn = googleAuthUiClient.signIn()
+                launcher.launch(
+                    IntentSenderRequest.Builder(
+                        singIn ?: return@launch
+                    ).build()
+                )
             }
-            else
-                Log.d("auth", "auth error")
         }
     }
 
-    private fun test() {
-        val ab = supportActionBar
-        ab?.title = "hi"
+    private fun test(userData: UserData) {
+        binding.nameId.text = userData.username
+        binding.singInButtom.text = "Sing Out"
+        sI = true
+        Thread{
+            runOnUiThread {
+            Picasso.get().load(userData.profilePictureUrl).resize(50, 50)
+                .centerCrop().into(binding.iconAcc)
+            }
+        }.start()
+    }
+
+    private fun singOutProfile(){
+        binding.nameId.apply {
+            text = "Anonymous"
+        }
+        sI = false
+        binding.iconAcc.setImageResource(R.drawable.anonimus)
+        binding.singInButtom.text = "Sing In"
+        binding.buttonCreateGame.visibility = View.INVISIBLE
+        binding.buttonJoinGame.visibility = View.INVISIBLE
+        binding.idText.visibility = View.INVISIBLE
     }
 
 }
+

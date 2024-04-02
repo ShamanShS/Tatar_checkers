@@ -51,8 +51,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.play.services.auth)
     implementation(libs.material)
-
-    testImplementation(libs.junit)
+    implementation("com.squareup.picasso:picasso:2.8")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
