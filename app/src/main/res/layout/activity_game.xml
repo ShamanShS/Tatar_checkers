@@ -10,12 +10,11 @@
     <com.shamanshs.tatar_checkers.FieldView
         android:id="@+id/gameField"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="402dp"
         android:layout_marginLeft="5dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="144dp"
         android:layout_marginRight="5dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -26,12 +25,73 @@
         android:id="@+id/statusTurnText"
         android:layout_width="147dp"
         android:layout_height="34dp"
-        android:textColor="#305535"
-
+        android:gravity="center"
+        android:text="ID"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/gameField"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.672" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardIdOne"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:layout_gravity="center"
+        android:layout_marginStart="5dp"
+        android:layout_marginBottom="5dp"
+        app:cardCornerRadius="250dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/icon_acc_one"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/anonimus" />
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/nameIdOne"
+        android:layout_width="197dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="5dp"
+        android:gravity="center|left"
+        android:text="dsdd"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/cardIdOne" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardIdTwo"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:layout_gravity="center"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="5dp"
+        app:cardCornerRadius="250dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/icon_acc_two"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/anonimous_black" />
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/nameIdTwo"
+        android:layout_width="197dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="8dp"
+        android:gravity="center|right"
+        android:text="Ожидание игрока"
+        app:layout_constraintEnd_toStartOf="@+id/cardIdTwo"
         app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

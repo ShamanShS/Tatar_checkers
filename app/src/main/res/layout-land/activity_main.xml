@@ -12,7 +12,8 @@
         android:id="@+id/linearLayout2"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="55dp"
+        android:layout_marginEnd="50dp"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -99,14 +100,16 @@
         android:id="@+id/cardId"
         android:layout_width="46dp"
         android:layout_height="46dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="30dp"
         app:cardCornerRadius="250dp"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/icon_acc"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:scaleType="centerCrop"
             android:src="@drawable/anonimus" />
 
@@ -115,26 +118,24 @@
     <TextView
         android:id="@+id/nameId"
         android:layout_width="109dp"
-        android:layout_height="40dp"
-        android:layout_marginTop="2dp"
+        android:layout_height="46dp"
+        android:layout_marginTop="5dp"
         android:layout_marginEnd="10dp"
-        android:layout_marginBottom="2dp"
         android:gravity="center|right"
         android:text="dsdd"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintEnd_toStartOf="@+id/cardId"
-        app:layout_constraintStart_toEndOf="@+id/singInButtom"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/singInButtom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="31dp"
-        android:layout_marginTop="2dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="5dp"
         android:layout_marginBottom="2dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
         app:layout_constraintStart_toEndOf="@+id/gameField"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity() {
                         intent = it.data ?: return@launch
                     )
                     test(signInResult.data!!)
-                    Log.d("b", "${signInResult.data?.username}")
+                    Log.d("b", "${signInResult.data.username}")
                 }
             }
         }
@@ -145,6 +145,8 @@ class MainActivity : AppCompatActivity() {
         }
         Firebase.firestore.collection("Games")
             .document(gameId)
+            .collection("Info")
+            .document("GameInfo")
             .get()
             .addOnSuccessListener {
                 val dataGame = it?.toObject(GameInfo::class.java)

@@ -10,8 +10,14 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.marginTop
 import androidx.fragment.app.FragmentTransaction
+import com.google.android.gms.auth.api.identity.Identity
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
+import com.shamanshs.tatar_checkers.GoogleAuth.GoogleAuthUiClient
+import com.shamanshs.tatar_checkers.GoogleAuth.UserData
 import com.shamanshs.tatar_checkers.databinding.ActivityGameBinding
 import com.shamanshs.tatar_checkers.engine.Board
 import com.shamanshs.tatar_checkers.engine.Board.blackCount
@@ -34,10 +40,18 @@ import com.shamanshs.tatar_checkers.engine.Board.win
 import com.shamanshs.tatar_checkers.engine.Board.youColor
 import com.shamanshs.tatar_checkers.engine.BoardLogic
 import com.shamanshs.tatar_checkers.engine.GameInfo
+import com.squareup.picasso.Picasso
 
 class GameActivity : AppCompatActivity(), FieldView.Listener  {
     private lateinit var binding : ActivityGameBinding
     private val game = BoardLogic()
+    private val googleAuthUiClient by lazy {
+        GoogleAuthUiClient(
+            context = applicationContext,
+            oneTapClient = Identity.getSignInClient(applicationContext)
+        )
+    }
+    private var leavOpponent = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,12 +63,16 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        supportActionBar?.hide()
-        val str = "$id"
-        binding.statusTurnText?.text = str
+        addIcon()
+        if (typeGame != "P2P") {
+            val str = "$id"
+            binding.statusTurnText.text = "ID:" + str
+        }
+        else
+            binding.statusTurnText.text = ""
         binding.gameField.listener = this
         if (new) {
-            Board.test()
+            Board.fillMapABoard()
             turn = 1
             win = 0
             new = false
@@ -69,7 +87,7 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
                 }
         }
         if (typeGame != "P2P") {
-            onChangeListener()
+            onChangeListenerGameInfo()
             rotateIs = false
             if (youColor == -1) {
                 binding.gameField.rotation = 180f
@@ -78,6 +96,36 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
         }
     }
 
+    private fun addIcon(){
+        if (typeGame == "P2P"){
+            binding.iconAccOne.setImageResource(R.drawable.anonimus)
+            binding.nameIdOne.text = "White"
+            binding.iconAccTwo.setImageResource(R.drawable.anonimous_black)
+            binding.nameIdTwo.text = "Black"
+        }
+        else {
+            val user = googleAuthUiClient.getSignedInUser()
+            if (user != null) {
+                binding.nameIdOne.text = user.username
+            }
+            Thread{
+                runOnUiThread {
+                    if (user != null) {
+                        Picasso.get().load( user.profilePictureUrl).resize(50, 50)
+                            .centerCrop().into(binding.iconAccOne)
+                    }
+                }
+            }.start()
+            if (youColor == 1){
+                sendToDataBaseInfoPlayerWhite()
+                onChangeListenerInfoPlayer(-1)
+            }
+            else {
+                sendToDataBaseInfoPlayerBlack()
+                onChangeListenerInfoPlayer(1)
+            }
+        }
+    }
 
 
     override fun onCLick(i: Int, j: Int) {
@@ -92,7 +140,35 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
         super.onDestroy()
         if (win != 0)
             finishGame()
+        deletePlayer(youColor)
+        if (leavOpponent)
+            deleteGame(youColor)
         Log.d("MyLog", "Destroy")
+    }
+
+    private fun deleteGame(color: Int){
+        Firebase.firestore.collection("Games")
+            .document(id.toString())
+            .collection("Info")
+            .document("GameInfo")
+            .delete()
+            .addOnSuccessListener { Log.d("Firebase delete", "DocumentSnapshot GameInfo successfully deleted!") }
+            .addOnFailureListener { e -> Log.w("Firebase delete", "Error deleting document", e) }
+        Firebase.firestore.collection("Games")
+            .document(id.toString())
+            .delete()
+            .addOnSuccessListener { Log.d("Firebase delete", "DocumentSnapshot Game successfully deleted!") }
+            .addOnFailureListener { e -> Log.w("Firebase delete", "Error deleting document", e) }
+    }
+
+    private fun deletePlayer(color: Int) {
+        Firebase.firestore.collection("Games")
+            .document(id.toString())
+            .collection("Info")
+            .document(if (color == 1) "InfoPlayerWhite" else "InfoPlayerBlack")
+            .delete()
+            .addOnSuccessListener { Log.d("Firebase delete", "DocumentSnapshot Player successfully deleted!") }
+            .addOnFailureListener { e -> Log.w("Firebase delete", "Error deleting document", e) }
     }
 
     private fun isOver(turnCheck: Int) {
@@ -150,6 +226,8 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
         convertToDataModel(dataGame)
         Firebase.firestore.collection("Games")
             .document(id.toString())
+            .collection("Info")
+            .document("GameInfo")
             .set(dataGame)
     }
 
@@ -170,10 +248,12 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
         }
     }
 
-    private fun onChangeListener(){
+    private fun onChangeListenerGameInfo(){
         if (id != -1){
             Firebase.firestore.collection("Games")
                 .document(id.toString())
+                .collection("Info")
+                .document("GameInfo")
                 .addSnapshotListener { value, _ ->
                     if (value != null){
                         val dataGame = value.toObject(GameInfo::class.java)
@@ -215,6 +295,53 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
                 mapABoard[x][y] = dataGame.field[(y * 8) + x]
             }
         }
+    }
+
+    private fun onChangeListenerInfoPlayer(color: Int):Boolean {
+        var flag = true
+        Firebase.firestore.collection("Games")
+            .document(id.toString())
+            .collection("Info")
+            .document(if (color == 1) "InfoPlayerWhite" else "InfoPlayerBlack")
+            .addSnapshotListener { value, _ ->
+                val userWhite = value?.toObject(UserData::class.java)
+                if (userWhite != null) {
+                    binding.nameIdTwo.text = userWhite.username
+                    Thread{
+                        runOnUiThread {
+                            Picasso.get().load( userWhite.profilePictureUrl).resize(50, 50)
+                                .centerCrop().into(binding.iconAccTwo)
+                        }
+                    }.start()
+                }
+                else {
+                    binding.nameIdTwo.text = "Ожидание игрока"
+                    binding.iconAccTwo.setImageResource(R.drawable.anonimous_black)
+                    flag = false
+                    leavOpponent = true
+                }
+            }
+        return flag
+    }
+
+
+
+    private fun sendToDataBaseInfoPlayerBlack() {
+        val user = googleAuthUiClient.getSignedInUser()
+        Firebase.firestore.collection("Games")
+            .document(id.toString())
+            .collection("Info")
+            .document("InfoPlayerBlack")
+            .set(user!!)
+    }
+
+    private fun sendToDataBaseInfoPlayerWhite() {
+        val user = googleAuthUiClient.getSignedInUser()
+        Firebase.firestore.collection("Games")
+            .document(id.toString())
+            .collection("Info")
+            .document("InfoPlayerWhite")
+            .set(user!!)
     }
 
 }
