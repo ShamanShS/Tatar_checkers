@@ -29,7 +29,7 @@ class BoardLogic() {
 
 
     fun action(i: Int, j: Int) {
-        if (id != -1 && (youColor != turn || typeGame == "HostGame")) return
+        if (id != "-1" && (youColor != turn || typeGame == "HostGame")) return
         kill = canKill(turn)
         if (mapMove[i][j] == 0 && mapABoard[i][j] == 0 && !massacre) {
             Board.mapMoveReset(0)

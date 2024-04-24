@@ -89,5 +89,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/gameField" />
 
+    <TextView
+        android:id="@+id/turnView"
+        android:layout_width="88dp"
+        android:layout_height="43dp"
+        android:gravity="center"
+        android:text="Ход белых"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/gameField"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

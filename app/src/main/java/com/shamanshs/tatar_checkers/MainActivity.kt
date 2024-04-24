@@ -44,6 +44,8 @@ import com.shamanshs.tatar_checkers.engine.Board.typeGame
 import com.shamanshs.tatar_checkers.engine.GameInfo
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.launch
+import java.sql.Time
+import java.util.Calendar
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -53,7 +55,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var launcher: ActivityResultLauncher<IntentSenderRequest>
     private lateinit var auth: FirebaseAuth
     private var sI = false
-
     private val googleAuthUiClient by lazy {
         GoogleAuthUiClient(
             context = applicationContext,
@@ -66,7 +67,6 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
         auth = Firebase.auth
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         binding.buttonOnlineGame.setOnClickListener { onlineGame() }
         binding.buttonCreateGame.setOnClickListener { createGame() }
         binding.buttonJoinGame.setOnClickListener { joinGame() }
-        binding.singInButtom?.setOnClickListener { singInWithGoogle() }
+        binding.singInButtom.setOnClickListener { singInWithGoogle() }
         Thread{
             while (true) {
                 Thread.sleep(300)
@@ -110,7 +110,7 @@ class MainActivity : AppCompatActivity() {
         startActivity(Intent(this, GameActivity::class.java))
     }
 
-    fun onlineGame(){
+    private fun onlineGame(){
         if (sI) {
             if (binding.buttonCreateGame.visibility == View.INVISIBLE) {
                 binding.buttonCreateGame.visibility = View.VISIBLE
@@ -128,12 +128,13 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun createGame() {
+    private fun createGame() {
         new = true
         finishGame()
         Board.youColor = 1
         typeGame = "HostGame"
-        id = Random.nextInt(1000..9999)
+//        id = Random.nextInt(1000..9999)
+        auth.uid?.let {id = createId(it) }
         startActivity(Intent(this, GameActivity::class.java))
     }
 
@@ -154,12 +155,17 @@ class MainActivity : AppCompatActivity() {
                     binding.idText.error = "Нужен верный id"
                 }
                 else{
-                    finishGame()
-                    Board.youColor = -1
-                    new = true
-                    typeGame = "GameStart"
-                    id = gameId.toInt()
-                    startActivity(Intent(this, GameActivity::class.java))
+                    if (dataGame.typeGame != "GameStart") {
+                        finishGame()
+                        Board.youColor = -1
+                        new = true
+                        typeGame = "GameStart"
+                        id = gameId
+                        startActivity(Intent(this, GameActivity::class.java))
+                    }
+                    else {
+                        binding.idText.error = "Игра уже идет"
+                    }
                 }
             }
     }
@@ -203,6 +209,19 @@ class MainActivity : AppCompatActivity() {
         binding.buttonCreateGame.visibility = View.INVISIBLE
         binding.buttonJoinGame.visibility = View.INVISIBLE
         binding.idText.visibility = View.INVISIBLE
+    }
+
+    private fun createId(string: String):String{
+        val time = Calendar.getInstance().time
+        val shaName = AeSimpleSHA1.SHA1(string)
+        val shaTime = AeSimpleSHA1.SHA1(time.toString())
+        var shaId = ""
+        for (i in 0..2){
+            val r = Random.nextInt(0..40)
+            shaId += shaName[r]
+            shaId += shaTime[r]
+        }
+        return  shaId
     }
 
 }

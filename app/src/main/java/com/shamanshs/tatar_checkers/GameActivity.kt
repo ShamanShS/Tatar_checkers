@@ -133,7 +133,9 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
         if (win == 0)
             game.action(i, j)
         binding.gameField.update()
-        sendToDataBase()
+        if (typeGame != "P2P")
+            sendToDataBase()
+        binding.turnView.text = if (turn == 1) "Ход белых" else "Ход черных"
     }
 
     override fun onDestroy() {
@@ -173,12 +175,12 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
 
     private fun isOver(turnCheck: Int) {
         if (kill || choosingFigure) {
-            Log.d("0", "$win  ${Board.whiteCount}")
+            Log.d("0", "$win  ${whiteCount}")
             return
         }
         if (blackCount <= 0) {
             win = 1
-            Log.d("1", "$win  ${Board.whiteCount}")
+            Log.d("1", "$win  ${whiteCount}")
             val myDialogFragment = WinDialog()
             val manager = supportFragmentManager
             val transaction: FragmentTransaction = manager.beginTransaction()
@@ -187,14 +189,14 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
         }
         else if(whiteCount <= 0) {
             win = -1
-            Log.d("2", "$win  ${Board.whiteCount}")
+            Log.d("2", "$win  ${whiteCount}")
             val myDialogFragment = WinDialog()
             val manager = supportFragmentManager
             val transaction: FragmentTransaction = manager.beginTransaction()
             myDialogFragment.show(transaction, "dialog")
             return
         }
-        Log.d("3", "$win  ${Board.whiteCount}")
+        Log.d("3", "$win  ${whiteCount}")
         var temp = true
         for (i in 0..7){
             for(j in 0..7){
@@ -232,7 +234,7 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
     }
 
     private fun convertToDataModel(dataGame: GameInfo) {
-        dataGame.id = id.toString()
+        dataGame.id = id
         dataGame.turn = turn
         dataGame.win = win
         dataGame.blackCount = blackCount
@@ -249,7 +251,7 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
     }
 
     private fun onChangeListenerGameInfo(){
-        if (id != -1){
+        if (id != "-1"){
             Firebase.firestore.collection("Games")
                 .document(id.toString())
                 .collection("Info")
@@ -265,6 +267,7 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
                                 convertToGameModel(dataGame)
                             }
                             binding.gameField.update()
+                            binding.turnView.text = if (turn == 1) "Ход белых" else "Ход черных"
                             isOver(turn)
                         }
                     }
@@ -281,7 +284,7 @@ class GameActivity : AppCompatActivity(), FieldView.Listener  {
     }
 
     private fun convertToGameModel(dataGame: GameInfo) {
-        id = dataGame.id.toInt()
+        id = dataGame.id
         moveChecker = dataGame.moveChecker
         blackCount = dataGame.blackCount
         whiteCount = dataGame.whiteCount

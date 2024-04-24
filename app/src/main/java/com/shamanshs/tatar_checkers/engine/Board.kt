@@ -14,7 +14,7 @@ object Board {
     var win = 0
     var typeGame = ""
     var turn = 1
-    var id = -1
+    var id = "-1"
     var move = false
     var new = true
     var rotateIs = true
@@ -63,7 +63,7 @@ object Board {
         win = 0
         typeGame = ""
         turn = 1
-        id = -1
+        id = "-1"
         move = false
         new = true
         rotateIs = true

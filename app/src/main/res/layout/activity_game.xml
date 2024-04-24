@@ -85,13 +85,24 @@
 
     <TextView
         android:id="@+id/nameIdTwo"
-        android:layout_width="197dp"
-        android:layout_height="46dp"
-        android:layout_marginTop="4dp"
-        android:layout_marginEnd="8dp"
+        android:layout_width="192dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="10dp"
         android:gravity="center|right"
         android:text="Ожидание игрока"
         app:layout_constraintEnd_toStartOf="@+id/cardIdTwo"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/turnView"
+        android:layout_width="88dp"
+        android:layout_height="43dp"
+        android:gravity="center"
+        android:text="Ход белых"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/gameField" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
